@@ -283,7 +283,7 @@
       max-width: 320px;
     }
 
-    /* كارت تحول الصور (صغيرة / كبيرة) */
+    /* كارت الصور مع تعطيل تداخل الماوس لتستجيب مباشرة للضغط */
     .photo-toggle-section {
       display: flex;
       flex-direction: column;
@@ -301,6 +301,7 @@
       border: 4px solid var(--gold);
       box-shadow: 0 12px 30px rgba(112, 20, 179, 0.25);
       transition: transform 0.3s ease;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .photo-card:active {
@@ -311,7 +312,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: opacity 0.3s ease;
+      pointer-events: none;
     }
 
     .photo-overlay {
@@ -326,6 +327,7 @@
       font-weight: 700;
       backdrop-filter: blur(3px);
       text-align: center;
+      pointer-events: none;
     }
 
     .hero-title-box {
@@ -438,7 +440,7 @@
       }
     }
 
-    /* أيقونة التورتة العائمة مع التسمية التوضيحية */
+    /* زر التورتة العائم */
     .floating-wish-wrapper {
       position: fixed;
       bottom: 25px;
@@ -649,7 +651,6 @@
       }
     }
 
-    /* تجاوب الشاشات الصغيرة */
     @media (max-width: 480px) {
       .hero h1 {
         font-size: 2.2rem;
@@ -737,10 +738,10 @@
     <section class="hero">
       <p class="eyebrow">اليوم دا مش يوم عادي، دا أحلى يوم في تاريخ الكون</p>
 
-      <!-- قسم تبديل صورة الطفولة والكبر التفاعلية -->
+      <!-- تم إضافة معرف واضح للتحكم البرمجي -->
       <div class="photo-toggle-section">
-        <div class="photo-card" onclick="togglePhoto()" role="button" tabindex="0" aria-label="تبديل الصورة">
-          <img id="changingPhoto" src="https://files.catbox.moe/fkfmyy.jpg" alt="صورة نور">
+        <div class="photo-card" id="myPhotoCard">
+          <img id="changingPhoto" src="https://files.catbox.moe/zkj22q.jpg" alt="صورة نور">
           <div class="photo-overlay">
             <span id="photoHint">اضغطي للتغيير ✨</span>
           </div>
@@ -767,7 +768,6 @@
     </section>
   </main>
 
-  <!-- زر التورتة العائم مع جملة "اكتبي أمنيتك" -->
   <div class="floating-wish-wrapper" id="floatingWishBtn">
     <span class="wish-tooltip">اكتبي أمنيتك ✨</span>
     <button class="floating-wish-btn" onclick="openWishModal()" aria-label="اكتبي أمنيتك">🎂</button>
@@ -841,7 +841,6 @@
       burst();
     }
 
-    /* التحكم بإظهار زر التورتة الثابت عند التمرير */
     const floatingWishBtn = document.getElementById('floatingWishBtn');
     window.addEventListener('scroll', () => {
       if (window.scrollY > 200) {
@@ -851,26 +850,40 @@
       }
     });
 
-    /* دالة تبديل الصور المُبسطة والمضمونة */
-    const childPhotoUrl = "https://files.catbox.moe/fkfmyy.jpg";  // صورة وهي صغيرة (استبدلها برابطك لاحقاً)
-    const adultPhotoUrl = "https://files.catbox.moe/fkfmyy.jpg";  // صورة وهي كبيرة (استبدلها برابطك لاحقاً)
+    /* دالة تبديل الصور مع تفعيل حدث الضغط بضمان 100% */
+    const childPhotoUrl = "https://files.catbox.moe/zkj22q.jpg";  
+    const adultPhotoUrl = "https://files.catbox.moe/t24k8o.jpg";  
     let isChildPhoto = true;
 
     function togglePhoto() {
       const photoImg = document.getElementById('changingPhoto');
       const photoHint = document.getElementById('photoHint');
       
+      if (!photoImg || !photoHint) return;
+
       if (isChildPhoto) {
         photoImg.src = adultPhotoUrl;
         photoHint.textContent = "ستهم لما كبرت ❤️";
         isChildPhoto = false;
       } else {
         photoImg.src = childPhotoUrl;
-        photoHint.textContent = "اضغطي ✨";
+        photoHint.textContent = "اضغطي للتغيير ✨";
         isChildPhoto = true;
       }
       burst();
     }
+
+    // ربط الحدث بالكارت وفحص الاستجابة فور جاهزية الصفحة
+    document.addEventListener('DOMContentLoaded', () => {
+      const card = document.getElementById('myPhotoCard');
+      if (card) {
+        card.addEventListener('click', togglePhoto);
+        card.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          togglePhoto();
+        });
+      }
+    });
 
     const fullMessage = `هي هي ستهم اللي كبرت سنة يستي 🎉
 في مثل هذا اليوم الخامس والعشرون من اكتوبر عام 2008 ولدت اجمل واحن بنت في الوجود واليوم مر علي هذا الحدث 18 سنه
@@ -1013,7 +1026,7 @@
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-    import { getAuth, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyBi4Rk-iUAz_hd8J-g6YABZDO1hgxPY1qs",
@@ -1031,35 +1044,37 @@
     const status = document.getElementById('wishStatus');
     const submit = document.getElementById('wishSubmit');
 
-    submit.addEventListener('click', async () => {
-      const text = document.getElementById('wishText').value.trim();
+    if (submit) {
+      submit.addEventListener('click', async () => {
+        const text = document.getElementById('wishText').value.trim();
 
-      if(!text) {
-        status.textContent = 'اكتبي الأمنية أولًا.';
-        return;
-      }
+        if(!text) {
+          status.textContent = 'اكتبي الأمنية أولًا.';
+          return;
+        }
 
-      submit.disabled = true;
-      status.textContent = 'جاري إرسال الأمنية…';
+        submit.disabled, submit.disabled = true;
+        status.textContent = 'جاري إرسال الأمنية…';
 
-      try {
-        await addDoc(collection(db, 'wishes'), {
-          name: 'Nour',
-          text: text,
-          createdAt: serverTimestamp()
-        });
+        try {
+          await addDoc(collection(db, 'wishes'), {
+            name: 'Nour',
+            text: text,
+            createdAt: serverTimestamp()
+          });
 
-        document.getElementById('wishText').value = '';
-        status.textContent = 'تم إرسال أمنيتك 💖';
-        burst();
+          document.getElementById('wishText').value = '';
+          status.textContent = 'تم إرسال أمنيتك 💖';
+          burst();
 
-        setTimeout(() => { closeWishModal(); }, 1300);
-      } catch(error) {
-        console.error('Firebase Error:', error);
-        status.textContent = 'تعذر الإرسال. راجعي إعدادات Firebase وقواعد Firestore.';
-      }
-      submit.disabled = false;
-    });
+          setTimeout(() => { closeWishModal(); }, 1300);
+        } catch(error) {
+          console.error('Firebase Error:', error);
+          status.textContent = 'تعذر الإرسال. راجعي إعدادات Firebase وقواعد Firestore.';
+        }
+        submit.disabled = false;
+      });
+    }
 
     window.loadWishes = async function() {
       const email = document.getElementById('adminEmail').value.trim();
